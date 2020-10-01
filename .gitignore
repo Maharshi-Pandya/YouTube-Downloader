@@ -1,0 +1,11 @@
+.vscode
+/bin
+/include
+/lib
+/lib64
+/share
+/pyvenv.cfg
+/__pycache__
+/NOTE.txt
+/logger.txt
+/json_info.json

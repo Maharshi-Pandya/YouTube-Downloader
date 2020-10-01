@@ -2,6 +2,7 @@ import re
 import json
 import requests
 import utils
+import sys
 
 from bs4 import BeautifulSoup
 
@@ -19,6 +20,7 @@ class YouTubeDownLoad:
 
     # private:
     def _create_soup(self):
+        print("\n::-> Fetching the video data")
         resp_page: requests.Response = requests.get(self.video_url, headers=utils.request_headers())
         return BeautifulSoup(resp_page.text, "html.parser")
 
@@ -48,9 +50,10 @@ class YouTubeDownLoad:
         )
 
         # uncomment if you wanna save the json to a file
-        with open("json_info.json", "w") as json_file:
-            json_file.write(final_json_str)
+        # with open("json_info.json", "w") as json_file:
+        #     json_file.write(final_json_str)
 
+        print("::-> Extracted video information")
         return json.loads(final_json_str)
 
     def _extract_streams(self) -> tuple:
@@ -66,11 +69,16 @@ class YouTubeDownLoad:
             stream_dict: dict = {}
             stream: dict = self._final_json_dict["streamingData"]["formats"][stream_index]
 
-            stream_dict["src_url"] = stream["url"]
-            stream_dict["bitrate"] = stream["bitrate"]
-            stream_dict["mime_type"] = stream["mimeType"]
-            stream_dict["quality_label"] = stream["qualityLabel"]
-            video_streams.append(stream_dict)
+            try:
+                stream_dict["src_url"] = stream["url"]
+                stream_dict["bitrate"] = stream["bitrate"]
+                stream_dict["mime_type"] = stream["mimeType"]
+                stream_dict["quality_label"] = stream["qualityLabel"]
+                video_streams.append(stream_dict)
+            except:
+                print("::-> Detected signature ciphers in the video data")
+                print("Error: Unable to start the download\n")
+                sys.exit()
 
         # ik ik.....but will refactor it later
 
@@ -144,6 +152,7 @@ class YouTubeDownLoad:
             # got the source url
             vid_src_url = utils.clean_url(vid_src_url)
 
+            print("::-> Download in progress...")
             # get the response from the src url in chunks (stream=True)
             response = requests.get(vid_src_url, headers=utils.request_headers(), stream=True)
             response.raise_for_status()
@@ -165,6 +174,7 @@ class YouTubeDownLoad:
         # clean the url first
         audio_src_url = utils.clean_url(audio_src_url)
 
+        print("::->Download in progress...")
         # request the audio source
         audio_resp = requests.get(audio_src_url, headers=utils.request_headers(), stream=True)
         audio_resp.raise_for_status()
