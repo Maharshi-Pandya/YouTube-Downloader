@@ -3,22 +3,23 @@
 - Download YouTube video(s)/audio(s) through the CLI
 - Pass in the `VIDEO_URL` as an argument with the `-p path/to/save` and the `--onlyaudio` option
   to download the only the audio, from the video, and save it in `path/to/save`
-- Helpful in download of songs from YouTube (something which I do a lot)
+- Helpful to download songs from YouTube (something which I do a lot)
 
 ### Usage
 
-Clone the repo locally
+Clone this repo locally
 
 ```
 $ git clone https://github.com/Maharshi-Pandya/YouTube-Downloader.git
 $ cd YouTube-Downloader
+$ pip3 install -r requirements.txt
 ```
 
 We have to pass in some arguments in the CLI for this to work
 
-- --onlyaudio or -q (--quality)
-- VIDEO_URL
-- -p (--path) path/to/save
+- `--onlyaudio` or `-q` (`--quality`)
+- `VIDEO_URL`
+- `-p` (`--path`) `path/to/save`
 
 Eg.
 
@@ -34,13 +35,13 @@ Also,
 $ ./app.py -q 360p -p <path/to/save> <YouTube_VIDEO_URL>
 ```
 
-Downloads the video in 360p quality and saves it to `path/to/save`
+Downloads the video in `360p` quality and saves it to `path/to/save`
 
 Behind the scenes, when the video source URL contains no audio streams, this script fetches the video
 file, and its corresponding audio file.
 Using `ffmpeg` then, it adds the audio file to the video file
 
-##### NOTE
+### NOTE
 
 In some of the YouTube videos (eg. videos of VEVO), their source urls are encrypted with some signature cipher.
 The source urls cannot be fetched without getting the signature from the cipher. (YouTube constantly
