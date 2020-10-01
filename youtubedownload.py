@@ -188,7 +188,7 @@ class YouTubeDownLoad:
                 response: requests.Response = requests.get(vid_src_url, headers=utils.request_headers(), stream=True)
                 response.raise_for_status()
             except:
-                print("::-> An error occurred while requesting the file. Try Again!")
+                print("::-> An error occurred while requesting the file.")
                 raise
 
             utils.save_to_disk(response, self.get_video_title(), path_to_save, is_video=True)
