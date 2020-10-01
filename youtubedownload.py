@@ -31,7 +31,8 @@ class YouTubeDownLoad:
             resp_page: requests.Response = requests.get(self.video_url, headers=utils.request_headers())
             soup = BeautifulSoup(resp_page.text, "html.parser")
         except:
-            print("::-> Something went wrong while trying to scrape YouTube")
+            print("::-> Something went wrong while trying to scrape the video data\n")
+            print("Here's the error stack!!!\n")
             raise
         
         return soup
@@ -42,31 +43,37 @@ class YouTubeDownLoad:
         """
         pattern_to_strip: str = r";ytplayer\.web_player_context_config.+"
 
-        # get the div which contains the target script
-        ts_div = self._src_page_soup.find("div", id="player")
+        try:
+            # get the div which contains the target script
+            ts_div = self._src_page_soup.find("div", id="player")
+            target_script = str(
+                ts_div.find("script", text=lambda txt: txt.startswith("var ytplayer"))
+            )
 
-        target_script = str(
-            ts_div.find("script", text=lambda txt: txt.startswith("var ytplayer"))
-        )
-        target_script = target_script.split(";", 1)[1]
+            target_script = target_script.split(";", 1)[1]
 
-        # strip the javascript from the script text
-        tmp_json_str = target_script.split(" = ", 1)[1]
-        tmp_json_str = re.sub(pattern_to_strip, "", tmp_json_str)
+            # strip the javascript from the script text
+            tmp_json_str = target_script.split(" = ", 1)[1]
+            tmp_json_str = re.sub(pattern_to_strip, "", tmp_json_str)
 
-        tmp_json_dict: dict = json.loads(tmp_json_str)
+            tmp_json_dict: dict = json.loads(tmp_json_str)
 
-        # the final json str which contains the info
-        final_json_str: str = re.sub(
-            r"\\\"", r"\"", tmp_json_dict["args"]["player_response"]
-        )
+            # the final json str which contains the info
+            final_json_str: str = re.sub(
+                r"\\\"", r"\"", tmp_json_dict["args"]["player_response"]
+            )
 
-        # uncomment if you wanna save the json to a file
-        # with open("json_info.json", "w") as json_file:
-        #     json_file.write(final_json_str)
+            # uncomment if you wanna save the json to a file
+            # with open("json_info.json", "w") as json_file:
+            # json_file.write(final_json_str)
 
-        print("::-> Extracted video information")
-        return json.loads(final_json_str)
+            print("::-> Extracted video information")
+            return json.loads(final_json_str)
+        
+        except:
+            print("Error: Invalid/Incorrect/Incomplete input provided\n")
+            sys.exit()
+
 
     def _extract_streams(self) -> tuple:
         """
@@ -164,8 +171,11 @@ class YouTubeDownLoad:
     def download(self, vid_format: str, path_to_save=None) -> None:
         """
         Downloads the video.
-        Current resolutions supported: 360p and 720p
+        Current resolutions supported: all
         """
+        if not vid_format:
+            print("Error: quality/resolution must not be None")
+
         vid_src_url: str = None
         vid_wa_url: str = None  # video without audio url
         for stream in self._video_streams:
