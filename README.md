@@ -36,6 +36,10 @@ $ ./app.py -q 360p -p <path/to/save> <YouTube_VIDEO_URL>
 
 Downloads the video in 360p quality and saves it to `path/to/save`
 
+Behind the scenes, when the video source URL contains no audio streams, this script fetches the video
+file, and its corresponding audio file.
+Using `ffmpeg` then, it adds the audio file to the video file
+
 ##### NOTE
 
 In some of the YouTube videos (eg. videos of VEVO), their source urls are encrypted with some signature cipher.
