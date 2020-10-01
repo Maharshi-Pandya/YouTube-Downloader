@@ -1,10 +1,17 @@
+import os
 import re
-import json
-import requests
-import utils
 import sys
+import glob
+import json
+import pathlib
+
+import requests
 
 from bs4 import BeautifulSoup
+
+
+# utils for this class
+import utils
 
 # Apna Karta Dharta
 class YouTubeDownLoad:
@@ -21,8 +28,14 @@ class YouTubeDownLoad:
     # private:
     def _create_soup(self):
         print("\n::-> Fetching the video data")
-        resp_page: requests.Response = requests.get(self.video_url, headers=utils.request_headers())
-        return BeautifulSoup(resp_page.text, "html.parser")
+        try:
+            resp_page: requests.Response = requests.get(self.video_url, headers=utils.request_headers())
+            soup = BeautifulSoup(resp_page.text, "html.parser")
+        except:
+            print("::-> Something went wrong while trying to scrape YouTube")
+            raise
+        
+        return soup
 
     def _create_json_dict(self) -> dict:
         """
@@ -107,6 +120,18 @@ class YouTubeDownLoad:
 
         return (video_streams, audio_streams)
 
+    def _download_video(self, vid_url: str, path_to_save=None):
+        try:
+            vid_resp = requests.get(vid_url, headers=utils.request_headers(), stream=True)
+            vid_resp.raise_for_status()
+        except:
+            print("::-> An error occurred while requesting the file")
+            raise
+
+        # save the video file
+        utils.save_to_disk(vid_resp, self.get_video_title(), path_to_save, is_video=True)
+        print("Done!")
+
     # public:
     def get_audio_streams(self) -> list:
         """
@@ -142,25 +167,68 @@ class YouTubeDownLoad:
         Downloads the video.
         Current resolutions supported: 360p and 720p
         """
-        if vid_format == "360p" or vid_format == "720p":
-            vid_src_url = None
-            for idx in range(len(self._video_streams)):
-                if self._video_streams[idx]["quality_label"] == vid_format:
-                    vid_src_url = self._video_streams[idx]["src_url"]
+        vid_src_url = None
+        vid_wa_url = None  # video without audio url
+        for stream in self._video_streams:
+            if stream["quality_label"] == vid_format: 
+                if re.search(",", stream["mime_type"]):
+                    vid_src_url = stream["src_url"]
+                    break
+                else:
+                    vid_wa_url = stream["src_url"]
                     break
 
+
+        if vid_src_url:
             # got the source url
             vid_src_url = utils.clean_url(vid_src_url)
 
             print("::-> Download in progress...")
             # get the response from the src url in chunks (stream=True)
-            response = requests.get(vid_src_url, headers=utils.request_headers(), stream=True)
-            response.raise_for_status()
+            try:
+                response = requests.get(vid_src_url, headers=utils.request_headers(), stream=True)
+                response.raise_for_status()
+            except:
+                print("::-> An error occurred while requesting the file. Try Again!")
+                raise
 
             utils.save_to_disk(response, self.get_video_title(), path_to_save, is_video=True)
+            
+            # endif
 
-        else:
-            print("The only supported formats for downloading a video is 360p and 720p for now!")
+        # ? When the video and audio urls are different
+        elif vid_wa_url:
+            # clean the url
+            vid_wa_url = utils.clean_url(vid_wa_url)
+            
+            # download audio and video files to be combined
+            self.download_audio(path_to_save)
+            print("::-> Downloading the video file...")
+            self._download_video(vid_wa_url, path_to_save)
+
+            # get to know which video and audio files needs to be combined
+            if path_to_save[len(path_to_save) - 1] != "/":
+                path_to_save += "/"
+
+            vid_filelist = glob.glob(path_to_save + "*.mp4")
+            last_vid_file = max(vid_filelist, key=os.path.getctime)
+            audio_filelist = glob.glob(path_to_save + "*.mp3")
+            last_audio_file = max(audio_filelist, key=os.path.getctime)
+
+            # use ffmpeg to combine both, audio and video
+            print("::-> Combining the audio and video files into one video file...")
+            cmd = f"ffmpeg -v quiet -i \"{last_vid_file}\" -i \"{last_audio_file}\" -map 0:v:0 -map 1:a:0 \"{self.get_video_title()}_final.mp4\""
+            # finally execute the command
+            ffmpeg_exitcode = os.system(cmd)
+
+            # delete the downloaded files so that the final combined file remain
+            os.remove(last_vid_file)
+            os.remove(last_audio_file)
+            
+            # endif
+
+        print("\nDownload is complete. Enjoy!\n")
+
 
     def download_audio(self, path_to_save=None) -> None:
         """
@@ -174,10 +242,15 @@ class YouTubeDownLoad:
         # clean the url first
         audio_src_url = utils.clean_url(audio_src_url)
 
-        print("::->Download in progress...")
+        print("::-> Downloading the audio file...")
         # request the audio source
-        audio_resp = requests.get(audio_src_url, headers=utils.request_headers(), stream=True)
-        audio_resp.raise_for_status()
+        try:
+            audio_resp = requests.get(audio_src_url, headers=utils.request_headers(), stream=True)
+            audio_resp.raise_for_status()
+        except:
+            print("::-> An error occurred while requesting the file")
+            raise
 
         # save to disk with is_video not set
         utils.save_to_disk(audio_resp, self.get_video_title(), path_to_save, is_video=False)
+        print("Done!")

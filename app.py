@@ -18,6 +18,9 @@ parser.add_argument("-p", "--path", type=str, help="The path where the video/aud
 args = parser.parse_args()
 
 ytvideo = youtubedownload.YouTubeDownLoad(args.VIDEO_URL)
+# when path is not provided, it will download in current directory
+if not args.path:
+    args.path = "."
 if args.onlyaudio:
     ytvideo.download_audio(args.path)
 else:
