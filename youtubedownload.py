@@ -3,7 +3,6 @@ import re
 import sys
 import glob
 import json
-import pathlib
 
 import requests
 
