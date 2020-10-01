@@ -137,7 +137,7 @@ class YouTubeDownLoad:
         self._video_title = self._final_json_dict["videoDetails"]["title"]
         return self._video_title
 
-    def download(self, vid_format: str) -> None:
+    def download(self, vid_format: str, path_to_save=None) -> None:
         """
         Downloads the video.
         Current resolutions supported: 360p and 720p
@@ -157,7 +157,7 @@ class YouTubeDownLoad:
             response = requests.get(vid_src_url, headers=utils.request_headers(), stream=True)
             response.raise_for_status()
 
-            utils.save_to_disk(response, self.get_video_title(), is_video=True)
+            utils.save_to_disk(response, self.get_video_title(), path_to_save, is_video=True)
 
         else:
             print("The only supported formats for downloading a video is 360p and 720p for now!")
