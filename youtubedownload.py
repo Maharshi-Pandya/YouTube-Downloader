@@ -140,7 +140,7 @@ class YouTubeDownLoad:
     def download(self, vid_format: str) -> None:
         """
         Downloads the video.
-        If the audio_only param is set, it will download only the audio
+        Current resolutions supported: 360p and 720p
         """
         if vid_format == "360p" or vid_format == "720p":
             vid_src_url = None
