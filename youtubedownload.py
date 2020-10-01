@@ -120,7 +120,7 @@ class YouTubeDownLoad:
 
         return (video_streams, audio_streams)
 
-    def _download_video(self, vid_url: str, path_to_save=None):
+    def _download_video(self, vid_url: str, path_to_save=None) -> None:
         try:
             vid_resp = requests.get(vid_url, headers=utils.request_headers(), stream=True)
             vid_resp.raise_for_status()
@@ -167,26 +167,26 @@ class YouTubeDownLoad:
         Downloads the video.
         Current resolutions supported: 360p and 720p
         """
-        vid_src_url = None
-        vid_wa_url = None  # video without audio url
+        vid_src_url: str = None
+        vid_wa_url: str = None  # video without audio url
         for stream in self._video_streams:
             if stream["quality_label"] == vid_format: 
                 if re.search(",", stream["mime_type"]):
-                    vid_src_url = stream["src_url"]
+                    vid_src_url: str = stream["src_url"]
                     break
                 else:
-                    vid_wa_url = stream["src_url"]
+                    vid_wa_url: str = stream["src_url"]
                     break
 
 
         if vid_src_url:
             # got the source url
-            vid_src_url = utils.clean_url(vid_src_url)
+            vid_src_url: str = utils.clean_url(vid_src_url)
 
             print("::-> Download in progress...")
-            # get the response from the src url in chunks (stream=True)
+            # ? get the response from the src url in chunks (stream=True)
             try:
-                response = requests.get(vid_src_url, headers=utils.request_headers(), stream=True)
+                response: requests.Response = requests.get(vid_src_url, headers=utils.request_headers(), stream=True)
                 response.raise_for_status()
             except:
                 print("::-> An error occurred while requesting the file. Try Again!")
@@ -199,7 +199,7 @@ class YouTubeDownLoad:
         # ? When the video and audio urls are different
         elif vid_wa_url:
             # clean the url
-            vid_wa_url = utils.clean_url(vid_wa_url)
+            vid_wa_url: str = utils.clean_url(vid_wa_url)
             
             # download audio and video files to be combined
             self.download_audio(path_to_save)
@@ -210,14 +210,14 @@ class YouTubeDownLoad:
             if path_to_save[len(path_to_save) - 1] != "/":
                 path_to_save += "/"
 
-            vid_filelist = glob.glob(path_to_save + "*.mp4")
-            last_vid_file = max(vid_filelist, key=os.path.getctime)
-            audio_filelist = glob.glob(path_to_save + "*.mp3")
-            last_audio_file = max(audio_filelist, key=os.path.getctime)
+            vid_filelist: list = glob.glob(path_to_save + "*.mp4")
+            last_vid_file: str = max(vid_filelist, key=os.path.getctime)
+            audio_filelist: list = glob.glob(path_to_save + "*.mp3")
+            last_audio_file: str = max(audio_filelist, key=os.path.getctime)
 
             # use ffmpeg to combine both, audio and video
             print("::-> Combining the audio and video files into one video file...")
-            cmd = f"ffmpeg -v quiet -i \"{last_vid_file}\" -i \"{last_audio_file}\" -map 0:v:0 -map 1:a:0 \"{self.get_video_title()}_final.mp4\""
+            cmd: str = f"ffmpeg -v quiet -i \"{last_vid_file}\" -i \"{last_audio_file}\" -map 0:v:0 -map 1:a:0 \"{self.get_video_title()}_final.mp4\""
             # finally execute the command
             ffmpeg_exitcode = os.system(cmd)
 
@@ -237,15 +237,15 @@ class YouTubeDownLoad:
 
         (Useful when downloading songs from YouTube)
         """
-        audio_src_url = self._audio_streams[0]["src_url"]    # download the first one from the audio streams
+        audio_src_url: str = self._audio_streams[0]["src_url"]    # download the first one from the audio streams
 
         # clean the url first
-        audio_src_url = utils.clean_url(audio_src_url)
+        audio_src_url: str = utils.clean_url(audio_src_url)
 
         print("::-> Downloading the audio file...")
         # request the audio source
         try:
-            audio_resp = requests.get(audio_src_url, headers=utils.request_headers(), stream=True)
+            audio_resp: requests.Response = requests.get(audio_src_url, headers=utils.request_headers(), stream=True)
             audio_resp.raise_for_status()
         except:
             print("::-> An error occurred while requesting the file")
