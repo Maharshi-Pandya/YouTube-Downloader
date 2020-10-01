@@ -34,7 +34,7 @@ class YouTubeDownLoad:
             print("::-> Something went wrong while trying to scrape the video data\n")
             print("Here's the error stack!!!\n")
             raise
-        
+
         return soup
 
     def _create_json_dict(self) -> dict:
@@ -47,8 +47,8 @@ class YouTubeDownLoad:
             # get the div which contains the target script
             ts_div = self._src_page_soup.find("div", id="player")
             target_script = str(
-                ts_div.find("script", text=lambda txt: txt.startswith("var ytplayer"))
-            )
+                    ts_div.find("script", text=lambda txt: txt.startswith("var ytplayer"))
+                    )
 
             target_script = target_script.split(";", 1)[1]
 
@@ -60,8 +60,8 @@ class YouTubeDownLoad:
 
             # the final json str which contains the info
             final_json_str: str = re.sub(
-                r"\\\"", r"\"", tmp_json_dict["args"]["player_response"]
-            )
+                    r"\\\"", r"\"", tmp_json_dict["args"]["player_response"]
+                    )
 
             # uncomment if you wanna save the json to a file
             # with open("json_info.json", "w") as json_file:
@@ -69,7 +69,7 @@ class YouTubeDownLoad:
 
             print("::-> Extracted video information")
             return json.loads(final_json_str)
-        
+
         except:
             print("Error: Invalid/Incorrect/Incomplete input provided\n")
             sys.exit()
@@ -83,8 +83,8 @@ class YouTubeDownLoad:
 
         # first append to video streams from the "formats" key
         for stream_index in range(
-            len(self._final_json_dict["streamingData"]["formats"])
-        ):
+                len(self._final_json_dict["streamingData"]["formats"])
+                ):
             stream_dict: dict = {}
             stream: dict = self._final_json_dict["streamingData"]["formats"][stream_index]
 
@@ -102,12 +102,12 @@ class YouTubeDownLoad:
         # ik ik.....but will refactor it later
 
         for stream_index in range(
-            len(self._final_json_dict["streamingData"]["adaptiveFormats"])
-        ):
+                len(self._final_json_dict["streamingData"]["adaptiveFormats"])
+                ):
             stream_dict: dict = {}
             stream: dict = self._final_json_dict["streamingData"]["adaptiveFormats"][
-                stream_index
-            ]
+                    stream_index
+                    ]
 
             stream_dict["src_url"] = stream["url"]
             stream_dict["bitrate"] = stream["bitrate"]
@@ -190,7 +190,7 @@ class YouTubeDownLoad:
 
         if vid_src_url:
             # got the source url
-            vid_src_url: str = utils.clean_url(vid_src_url)
+            vid_src_url: str = utils.sanitize_url(vid_src_url)
 
             print("::-> Download in progress...")
             # ? get the response from the src url in chunks (stream=True)
@@ -202,14 +202,14 @@ class YouTubeDownLoad:
                 raise
 
             utils.save_to_disk(response, self.get_video_title(), path_to_save, is_video=True)
-            
+
             # endif
 
         # ? When the video and audio urls are different
-        elif vid_wa_url:
-            # clean the url
-            vid_wa_url: str = utils.clean_url(vid_wa_url)
-            
+    elif vid_wa_url:
+        # clean the url
+            vid_wa_url: str = utils.sanitize_url(vid_wa_url)
+
             # download audio and video files to be combined
             self.download_audio(path_to_save)
             print("::-> Downloading the video file...")
@@ -233,7 +233,7 @@ class YouTubeDownLoad:
             # delete the downloaded files so that the final combined file remain
             os.remove(last_vid_file)
             os.remove(last_audio_file)
-            
+
             # endif
 
         print("\nDownload is complete. Enjoy!\n")
@@ -249,7 +249,7 @@ class YouTubeDownLoad:
         audio_src_url: str = self._audio_streams[0]["src_url"]    # download the first one from the audio streams
 
         # clean the url first
-        audio_src_url: str = utils.clean_url(audio_src_url)
+        audio_src_url: str = utils.sanitize_url(audio_src_url)
 
         print("::-> Downloading the audio file...")
         # request the audio source
