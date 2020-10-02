@@ -60,6 +60,10 @@ def save_to_disk(response: requests.Response, video_title: str, path_to_save, is
         os.mkdir(path_to_save)
         os.chdir(path_to_save)
 
+    # when the video title contains "/" change it to "_"
+    if re.search(r"\/", video_title):
+        video_title = re.sub(r"\/", "_", video_title)
+    
     # creates the filename and then starts saving to disk
     with open(create_file_name(video_title, path_to_save, is_video), "wb") as file_dl:
         for chunk in response.iter_content(chunk_size=8192):

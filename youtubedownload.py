@@ -206,7 +206,7 @@ class YouTubeDownLoad:
             # endif
 
         # ? When the video and audio urls are different
-    elif vid_wa_url:
+        elif vid_wa_url:
         # clean the url
             vid_wa_url: str = utils.sanitize_url(vid_wa_url)
 
