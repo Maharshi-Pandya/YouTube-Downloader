@@ -261,6 +261,7 @@ class YouTubeDownLoad:
             # apparently YT serves medium quality audio as its highest quality
             if audio_stream["audio_quality"] == "AUDIO_QUALITY_MEDIUM":
                 audio_src_url: str = audio_stream["src_url"]
+                break
 
         # clean the url first
         audio_src_url: str = utils.sanitize_url(audio_src_url)
