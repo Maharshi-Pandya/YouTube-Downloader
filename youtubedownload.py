@@ -99,7 +99,14 @@ class YouTubeDownLoad:
                 print("Error: Unable to start the download\n")
                 sys.exit()
 
-        # ik ik.....but will refactor it later
+        # ik ik.....but will refactor it later (i wont)
+        
+        # Essentially the json dict has two keys,
+        # "formats" and "adaptiveFormats" 
+        # "formats" key have video source URLs with audio in them
+        # "adaptiveFormats" key have both the video (w/o audio) and audio source URLs, but seperated.
+        # This key has 144p to 1080p quality included, whereas "formats" key have either 360p 
+        # or 720p quality in it.
 
         for stream_index in range(
                 len(self._final_json_dict["streamingData"]["adaptiveFormats"])
@@ -116,7 +123,8 @@ class YouTubeDownLoad:
             try:
                 stream_dict["quality_label"] = stream["qualityLabel"]
             except KeyError:
-                pass
+                # this means it is an audio stream
+                stream_dict["audio_quality"] = stream["audioQuality"]
 
             # if mimeType is a "video", append to video stream
             if stream_dict["mime_type"].startswith("video"):
@@ -136,7 +144,7 @@ class YouTubeDownLoad:
 
         # save the video file
         utils.save_to_disk(vid_resp, self.get_video_title(), path_to_save, is_video=True)
-        print("Done!")
+        print("Done!\n")
 
     # public:
     def get_audio_streams(self) -> list:
@@ -231,11 +239,13 @@ class YouTubeDownLoad:
             ffmpeg_exitcode = os.system(cmd)
 
             # delete the downloaded files so that the final combined file remain
-            os.remove(last_vid_file)
-            os.remove(last_audio_file)
+            try:
+                os.remove(last_vid_file)
+                os.RTLD_NOWremove(last_audio_file)
+            except OSError:
+                pass
 
-            # endif
-
+        # endif
         print("\nDownload is complete. Enjoy!\n")
 
 
@@ -246,7 +256,11 @@ class YouTubeDownLoad:
 
         (Useful when downloading songs from YouTube)
         """
-        audio_src_url: str = self._audio_streams[0]["src_url"]    # download the first one from the audio streams
+        audio_src_url: str = ""
+        for audio_stream in self._audio_streams:
+            # apparently YT serves medium quality audio as its highest quality
+            if audio_stream["audio_quality"] == "AUDIO_QUALITY_MEDIUM":
+                audio_src_url: str = audio_stream["src_url"]
 
         # clean the url first
         audio_src_url: str = utils.sanitize_url(audio_src_url)
@@ -262,4 +276,4 @@ class YouTubeDownLoad:
 
         # save to disk with is_video not set
         utils.save_to_disk(audio_resp, self.get_video_title(), path_to_save, is_video=False)
-        print("Done!")
+        print("Done!\n")
