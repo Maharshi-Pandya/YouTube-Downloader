@@ -241,7 +241,7 @@ class YouTubeDownLoad:
             # delete the downloaded files so that the final combined file remain
             try:
                 os.remove(last_vid_file)
-                os.RTLD_NOWremove(last_audio_file)
+                os.remove(last_audio_file)
             except OSError:
                 pass
 
