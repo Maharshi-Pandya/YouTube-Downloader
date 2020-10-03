@@ -234,7 +234,10 @@ class YouTubeDownLoad:
 
             # use ffmpeg to combine both, audio and video
             print("::-> Combining the audio and video files into one video file...")
-            cmd: str = f"ffmpeg -v quiet -i \"{last_vid_file}\" -i \"{last_audio_file}\" -map 0:v:0 -map 1:a:0 \"{self.get_video_title()}_final.mp4\""
+
+            # redirect all stdout and stderr to /dev/null
+            # keep the console clean
+            cmd: str = f"ffmpeg -v quiet -i \"{last_vid_file}\" -i \"{last_audio_file}\" -map 0:v:0 -map 1:a:0 \"{self.get_video_title()}_final.mp4\" > /dev/null 2>&1"
             # finally execute the command
             ffmpeg_exitcode = os.system(cmd)
 
