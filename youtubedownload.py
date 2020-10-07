@@ -63,9 +63,9 @@ class YouTubeDownLoad:
                     r"\\\"", r"\"", tmp_json_dict["args"]["player_response"]
                     )
 
-            # uncomment if you wanna save the json to a file
-            with open("json_info.json", "w") as json_file:
-                json_file.write(final_json_str)
+            # # uncomment if you wanna save the json to a file
+            # with open("json_info.json", "w") as json_file:
+            #     json_file.write(final_json_str)
 
             print("::-> Extracted video information")
             return json.loads(final_json_str)
