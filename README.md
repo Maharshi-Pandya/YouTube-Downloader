@@ -52,7 +52,8 @@ Using `ffmpeg` then, it adds the audio file to the video file
 
 In some of the YouTube videos (eg. videos of VEVO), their source urls are encrypted with some signature cipher.
 The source urls cannot be fetched without getting the signature from the cipher. (YouTube constantly
-changes the algorithm in their JS files)
+changes the algorithm in their JS files).
+
 Currently, this YouTube-Downloader doesnot support that.
 
 And it gives out this error
