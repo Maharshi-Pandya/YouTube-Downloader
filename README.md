@@ -7,6 +7,13 @@
 
 ### Usage
 
+> ##### NOTE
+>
+> - Before cloning this repo, make sure you have [ffmpeg](https://ffmpeg.org/ffmpeg.html "ffmpeg homepage")
+> installed locally on machine.
+> - Also, make sure it is added to path.
+
+
 Clone this repo locally
 
 ```
