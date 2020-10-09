@@ -31,7 +31,7 @@ We have to pass in some arguments in the CLI for this to work
 Eg.
 
 ```
-$ ./app.py --onlyaudio -p <path/to/save> <YouTube_VIDEO_URL>
+$ python3 app.py --onlyaudio -p <path/to/save> <YouTube_VIDEO_URL>
 ```
 
 Downloads only the audio from the YouTube video URL specified
@@ -39,7 +39,7 @@ Downloads only the audio from the YouTube video URL specified
 Also,
 
 ```
-$ ./app.py -q 360p -p <path/to/save> <YouTube_VIDEO_URL>
+$ python3 app.py -q 360p -p <path/to/save> <YouTube_VIDEO_URL>
 ```
 
 Downloads the video in `360p` quality and saves it to `path/to/save`
