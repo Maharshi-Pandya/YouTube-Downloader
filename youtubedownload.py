@@ -16,12 +16,12 @@ import utils
 class YouTubeDownLoad:
     def __init__(self, video_url: str) -> None:
         self.video_url: str = video_url
-        self._src_page_soup = self._create_soup()
+        self._src_page_soup = None
         # dict containing info of the src urls
-        self._final_json_dict: dict = self._create_json_dict()
+        self._final_json_dict: dict = None
 
         # the streaming formats for both audio and video
-        self._video_streams, self._audio_streams = self._extract_streams()
+        self._video_streams, self._audio_streams = None, None
         self._video_title: str = None
 
     # private:
@@ -35,7 +35,7 @@ class YouTubeDownLoad:
             print("Here's the error stack!!!\n")
             raise
 
-        return soup
+        self._src_page_soup = soup
 
     def _create_json_dict(self) -> dict:
         """
@@ -68,7 +68,7 @@ class YouTubeDownLoad:
             #     json_file.write(final_json_str)
 
             print("::-> Extracted video information")
-            return json.loads(final_json_str)
+            self._final_json_dict = json.loads(final_json_str)
 
         except:
             print("Error: Invalid/Incorrect/Incomplete input provided\n")
@@ -79,6 +79,10 @@ class YouTubeDownLoad:
         """
         Extract all the stream formats
         """
+        if not self._src_page_soup:
+            self._create_soup()
+            self._create_json_dict()
+
         video_streams, audio_streams = [], []
 
         # first append to video streams from the "formats" key
@@ -151,18 +155,27 @@ class YouTubeDownLoad:
         """
         Get all the streaming formats of the audio only
         """
+        if not self._audio_streams:
+            self._video_streams, self._audio_streams = self._extract_streams()
+        
         return self._audio_streams
 
     def get_video_streams(self) -> list:
         """
         Get all the streaming formats of the video (audio may/maynot be included)
         """
+        if not self._video_streams:
+            self._video_streams, self._audio_streams = self._extract_streams()
+
         return self._video_streams
 
     def get_all_streams(self) -> list:
         """
         Get all the streaming formats of both, the video and its audio, with src urls
         """
+        if not self._video_streams or not self._audio_streams:
+            self._video_streams, self._audio_streams = self._extract_streams()
+
         all_streams = []
         total_len = len(self._video_streams) + len(self._audio_streams)
         for idx in range(total_len):
@@ -173,6 +186,11 @@ class YouTubeDownLoad:
         return all_streams
 
     def get_video_title(self) -> str:
+        # check if the soup and json dict exist
+        if not self._src_page_soup:
+            self._create_soup()
+            self._create_json_dict()
+
         self._video_title = self._final_json_dict["videoDetails"]["title"]
         return self._video_title
 
@@ -183,6 +201,12 @@ class YouTubeDownLoad:
         """
         if not vid_format:
             print("Error: quality/resolution must not be None")
+
+        # check if soup and json dict are created
+        if not self._src_page_soup:
+            self._create_soup()
+            self._create_json_dict()
+            self._video_streams, self._audio_streams = self._extract_streams()
 
         vid_src_url: str = None
         vid_wa_url: str = None  # video without audio url
@@ -258,6 +282,12 @@ class YouTubeDownLoad:
 
         (Useful when downloading songs from YouTube)
         """
+        # check if the soup and json dict exists
+        if not self._src_page_soup:
+            self._create_soup()
+            self._create_json_dict()
+            self._video_streams, self._audio_streams = self._extract_streams()
+
         audio_src_url: str = ""
         for audio_stream in self._audio_streams:
             # apparently YT serves medium quality audio as its highest quality
