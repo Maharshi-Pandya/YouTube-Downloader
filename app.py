@@ -8,11 +8,22 @@ parser = argparse.ArgumentParser(
     description="Download YouTube videos using the CLI itself"
 )
 excl_group = parser.add_mutually_exclusive_group()
-excl_group.add_argument("--onlyaudio", action="store_true", help="Downloads only the audio from the YouTube URL")
-excl_group.add_argument("-q", "--quality", type=str, help="The quality to download the video in")
+excl_group.add_argument(
+    "-a",
+    "--onlyaudio",
+    action="store_true",
+    help="Downloads only the audio from the YouTube URL",
+)
+excl_group.add_argument(
+    "-q", "--quality", type=str, help="The quality to download the video in"
+)
 
-parser.add_argument("VIDEO_URL", type=str, help="The URL of the video which is to be downloaded")
-parser.add_argument("-p", "--path", type=str, help="The path where the video/audio should be downloaded")
+parser.add_argument(
+    "VIDEO_URL", type=str, help="The URL of the video which is to be downloaded"
+)
+parser.add_argument(
+    "-p", "--path", type=str, help="The path where the video/audio should be downloaded"
+)
 
 # parse the args
 args = parser.parse_args()

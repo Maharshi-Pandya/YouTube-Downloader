@@ -28,7 +28,9 @@ class YouTubeDownLoad:
     def _create_soup(self):
         print("\n::-> Fetching the video data")
         try:
-            resp_page: requests.Response = requests.get(self.video_url, headers=utils.request_headers())
+            resp_page: requests.Response = requests.get(
+                self.video_url, headers=utils.request_headers()
+            )
             soup = BeautifulSoup(resp_page.text, "html.parser")
         except:
             print("::-> Something went wrong while trying to scrape the video data\n")
@@ -47,8 +49,8 @@ class YouTubeDownLoad:
             # get the div which contains the target script
             ts_div = self._src_page_soup.find("div", id="player")
             target_script = str(
-                    ts_div.find("script", text=lambda txt: txt.startswith("var ytplayer"))
-                    )
+                ts_div.find("script", text=lambda txt: txt.startswith("var ytplayer"))
+            )
 
             target_script = target_script.split(";", 1)[1]
 
@@ -60,8 +62,8 @@ class YouTubeDownLoad:
 
             # the final json str which contains the info
             final_json_str: str = re.sub(
-                    r"\\\"", r"\"", tmp_json_dict["args"]["player_response"]
-                    )
+                r"\\\"", r"\"", tmp_json_dict["args"]["player_response"]
+            )
 
             # # uncomment if you wanna save the json to a file
             # with open("json_info.json", "w") as json_file:
@@ -73,7 +75,6 @@ class YouTubeDownLoad:
         except:
             print("Error: Invalid/Incorrect/Incomplete input provided\n")
             sys.exit()
-
 
     def _extract_streams(self) -> tuple:
         """
@@ -87,10 +88,12 @@ class YouTubeDownLoad:
 
         # first append to video streams from the "formats" key
         for stream_index in range(
-                len(self._final_json_dict["streamingData"]["formats"])
-                ):
+            len(self._final_json_dict["streamingData"]["formats"])
+        ):
             stream_dict: dict = {}
-            stream: dict = self._final_json_dict["streamingData"]["formats"][stream_index]
+            stream: dict = self._final_json_dict["streamingData"]["formats"][
+                stream_index
+            ]
 
             try:
                 stream_dict["src_url"] = stream["url"]
@@ -104,21 +107,21 @@ class YouTubeDownLoad:
                 sys.exit()
 
         # ik ik.....but will refactor it later (i wont)
-        
+
         # Essentially the json dict has two keys,
-        # "formats" and "adaptiveFormats" 
+        # "formats" and "adaptiveFormats"
         # "formats" key have video source URLs with audio in them
         # "adaptiveFormats" key have both the video (w/o audio) and audio source URLs, but seperated.
-        # This key has 144p to 1080p quality included, whereas "formats" key have either 360p 
+        # This key has 144p to 1080p quality included, whereas "formats" key have either 360p
         # or 720p quality in it.
 
         for stream_index in range(
-                len(self._final_json_dict["streamingData"]["adaptiveFormats"])
-                ):
+            len(self._final_json_dict["streamingData"]["adaptiveFormats"])
+        ):
             stream_dict: dict = {}
             stream: dict = self._final_json_dict["streamingData"]["adaptiveFormats"][
-                    stream_index
-                    ]
+                stream_index
+            ]
 
             stream_dict["src_url"] = stream["url"]
             stream_dict["bitrate"] = stream["bitrate"]
@@ -140,14 +143,18 @@ class YouTubeDownLoad:
 
     def _download_video(self, vid_url: str, path_to_save=None) -> None:
         try:
-            vid_resp = requests.get(vid_url, headers=utils.request_headers(), stream=True)
+            vid_resp = requests.get(
+                vid_url, headers=utils.request_headers(), stream=True
+            )
             vid_resp.raise_for_status()
         except:
             print("::-> An error occurred while requesting the file")
             raise
 
         # save the video file
-        utils.save_to_disk(vid_resp, self.get_video_title(), path_to_save, is_video=True)
+        utils.save_to_disk(
+            vid_resp, self.get_video_title(), path_to_save, is_video=True
+        )
         print("Done!\n")
 
     # public:
@@ -157,7 +164,7 @@ class YouTubeDownLoad:
         """
         if not self._audio_streams:
             self._video_streams, self._audio_streams = self._extract_streams()
-        
+
         return self._audio_streams
 
     def get_video_streams(self) -> list:
@@ -200,7 +207,8 @@ class YouTubeDownLoad:
         Current resolutions supported: all
         """
         if not vid_format:
-            print("Error: quality/resolution must not be None")
+            print("\n::-> Error: quality/resolution must not be None\n")
+            exit(1)
 
         # check if soup and json dict are created
         if not self._src_page_soup:
@@ -211,14 +219,13 @@ class YouTubeDownLoad:
         vid_src_url: str = None
         vid_wa_url: str = None  # video without audio url
         for stream in self._video_streams:
-            if stream["quality_label"] == vid_format: 
+            if stream["quality_label"] == vid_format:
                 if re.search(",", stream["mime_type"]):
                     vid_src_url: str = stream["src_url"]
                     break
                 else:
                     vid_wa_url: str = stream["src_url"]
                     break
-
 
         if vid_src_url:
             # got the source url
@@ -227,19 +234,23 @@ class YouTubeDownLoad:
             print("::-> Download in progress...")
             # ? get the response from the src url in chunks (stream=True)
             try:
-                response: requests.Response = requests.get(vid_src_url, headers=utils.request_headers(), stream=True)
+                response: requests.Response = requests.get(
+                    vid_src_url, headers=utils.request_headers(), stream=True
+                )
                 response.raise_for_status()
             except:
                 print("::-> An error occurred while requesting the file.")
                 raise
 
-            utils.save_to_disk(response, self.get_video_title(), path_to_save, is_video=True)
+            utils.save_to_disk(
+                response, self.get_video_title(), path_to_save, is_video=True
+            )
 
             # endif
 
         # ? When the video and audio urls are different
         elif vid_wa_url:
-        # clean the url
+            # clean the url
             vid_wa_url: str = utils.sanitize_url(vid_wa_url)
 
             # download audio and video files to be combined
@@ -260,7 +271,7 @@ class YouTubeDownLoad:
             print("::-> Combining the audio and video files into one video file...")
 
             # keep the console clean
-            cmd: str = f"ffmpeg -v quiet -i \"{last_vid_file}\" -i \"{last_audio_file}\" -map 0:v:0 -map 1:a:0 \"{self.get_video_title()}_final.mp4\""
+            cmd: str = f'ffmpeg -v quiet -i "{last_vid_file}" -i "{last_audio_file}" -map 0:v:0 -map 1:a:0 "{self.get_video_title()}_final.mp4"'
             # finally execute the command
             ffmpeg_exitcode = os.system(cmd)
 
@@ -273,7 +284,6 @@ class YouTubeDownLoad:
 
         # endif
         print("\nDownload is complete. Enjoy!\n")
-
 
     def download_audio(self, path_to_save=None) -> None:
         """
@@ -301,12 +311,16 @@ class YouTubeDownLoad:
         print("::-> Downloading the audio file...")
         # request the audio source
         try:
-            audio_resp: requests.Response = requests.get(audio_src_url, headers=utils.request_headers(), stream=True)
+            audio_resp: requests.Response = requests.get(
+                audio_src_url, headers=utils.request_headers(), stream=True
+            )
             audio_resp.raise_for_status()
         except:
             print("::-> An error occurred while requesting the file")
             raise
 
         # save to disk with is_video not set
-        utils.save_to_disk(audio_resp, self.get_video_title(), path_to_save, is_video=False)
+        utils.save_to_disk(
+            audio_resp, self.get_video_title(), path_to_save, is_video=False
+        )
         print("Done!\n")
