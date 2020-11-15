@@ -83,9 +83,15 @@ def save_to_disk(
         os.mkdir(path_to_save)
         os.chdir(path_to_save)
 
-    # when the video title contains "/" change it to "_"
-    if re.search(r"\/", video_title):
-        video_title = re.sub(r"\/", "_", video_title)
+    # patterns for slashes
+    slash_patt = [
+        r"\/+",
+        r"\\+",
+    ]
+    # when the video title contains "/+" or "\+" change it to "_"
+    for patt in slash_patt:
+        if re.search(patt, video_title):
+            video_title = re.sub(patt, "_", video_title)
 
     # creates the filename and then starts saving to disk
     with open(create_file_name(video_title, path_to_save, is_video), "wb") as file_dl:
