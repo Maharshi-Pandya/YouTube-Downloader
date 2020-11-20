@@ -283,7 +283,9 @@ class YouTubeDownLoad:
                 pass
 
         # endif
-        print("\nDownload is complete. Enjoy!\n")
+        print("Successfully downloaded the video/audio titled: ")
+        print(self.get_video_title())
+        print("\nDownload is complete.\n")
 
     def download_audio(self, path_to_save=None) -> None:
         """
